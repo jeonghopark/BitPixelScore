@@ -18,7 +18,7 @@ void ofApp::setup(){
     
     ofSetCircleResolution(16);
     
-    printer.open("/dev/cu.usbserial-A900adIr");
+    printer.open("/dev/tty.usbserial");
 
     gclef.load("GClef.png");
     fclef.load("FClef.png");
@@ -159,6 +159,10 @@ void ofApp::setup(){
     
     baseNum.addListener(this, &ofApp::changedBaseNum);
     bChangedBaseNum = false;
+
+    
+    printAll = false;
+    printFoot = false;
 
     
 }
@@ -335,6 +339,25 @@ void ofApp::update(){
     }
     
     
+    if (printAll) {
+        printHeader();
+        printCamView();
+        printScore();
+
+        printAll = false;
+    }
+    
+    if (printer.isThreadRunning()) {
+        printFoot = true;
+    }
+    
+    if (!printer.isThreadRunning() && printFoot) {
+        printFooter();
+        printFoot = false;
+    }
+    
+//    cout << "thread : " << printer.isThreadRunning() << endl;
+    
 }
 
 
@@ -452,7 +475,7 @@ void ofApp::draw(){
     ofPushMatrix();
     
     //FIXME: 12 ????
-    ofTranslate(-ofGetWidth()*0.5 + 12, ofGetHeight());
+    ofTranslate(-ofGetWidth()*0.5 + 0, ofGetHeight());
     ofRotateZ(-90);
     
     printScoreFbo.draw(0, ofGetHeight() - 384 * 0.5, 384 * 0.5, ofGetWidth());
@@ -471,7 +494,6 @@ void ofApp::draw(){
 //    ofPopMatrix();
 
     
-    
 }
 
 
@@ -483,7 +505,7 @@ void ofApp::drawPrintScoreFBO(){
     
     ofPushMatrix();
     //FIXME:: 40 ????
-    ofTranslate(ofGetHeight() * 0.5 - 40, 0);
+    ofTranslate(ofGetHeight() * 0.5 - 0, 0);
     
     ofSetColor(0);
     ofDrawRectangle(0, 0, printScoreFbo.getWidth(), printScoreFbo.getHeight());
@@ -1501,22 +1523,29 @@ void ofApp::keyReleased(int key){
 
     } else if (key == 'e') {
     
-        printer.close();
-        printer.open("/dev/cu.usbserial-A900adIr");
+//        printer.close();
+//        printer.open("/dev/cu.usbserial-A900adIr");
 
     } else if (key == 'i') {
     
         printCamView();
         
+        
     } else if (key == 'h') {
-    
+        
         printHeader();
 
     } else if (key == 'f') {
     
         printFooter();
 
+    } else if (key == 'a') {
+        
+        printAll = true;
+
     }
+    
+    
     
 
     
@@ -1825,7 +1854,6 @@ void ofApp::printCamView(){
     
     rotate(printCam, printCam, -90);
     printer.print(printCam, 10);
-
     
 }
 
@@ -1847,6 +1875,7 @@ void ofApp::printHeader(){
 void ofApp::printFooter(){
     
     string _date = ofGetTimestampString();
+    printer.println("------------------------");
     printer.println("------------------------");
     printer.println(" ");
     printer.println(" ");

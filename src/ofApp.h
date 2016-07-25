@@ -276,4 +276,8 @@ public:
     void printFooter();
     
     
+    bool printAll;
+    bool printFoot;
+    bool printHead;
+    
 };
